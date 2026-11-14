@@ -1,0 +1,9 @@
+[{
+  "modid": "capemod",
+  "name": "CapeMod",
+  "description": "Capas personalizadas online para Minecraft 1.8.9.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "authorList": [],
+  "useDependencyInformation": false
+}]
