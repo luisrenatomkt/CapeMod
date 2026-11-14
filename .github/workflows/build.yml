@@ -1,0 +1,49 @@
+name: Build CapeMod
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-mod:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mod
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JDK 8
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '8'
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('mod/build.gradle') }}
+          restore-keys: gradle-
+
+      - name: Install Gradle 2.14.1
+        working-directory: .
+        run: |
+          wget -q https://services.gradle.org/distributions/gradle-2.14.1-bin.zip -O /tmp/gradle.zip
+          unzip -q /tmp/gradle.zip -d /opt
+          echo "/opt/gradle-2.14.1/bin" >> $GITHUB_PATH
+
+      - name: Setup Forge workspace
+        run: gradle setupCIWorkspace --no-daemon
+
+      - name: Build
+        run: gradle build --no-daemon
+
+      - name: Upload jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: CapeMod-1.8.9
+          path: mod/build/libs/*.jar
