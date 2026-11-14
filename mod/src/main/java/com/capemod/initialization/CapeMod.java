@@ -1,8 +1,9 @@
 package com.capemod.initialization;
 
+import com.capemod.configuration.CapeConfig;
+import com.capemod.gui.CapeMenuScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.util.ChatComponentText;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.FMLLog;
@@ -25,6 +26,7 @@ public class CapeMod {
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
+        CapeConfig.load(event.getSuggestedConfigurationFile());
         FMLLog.info("[%s] preInit", NAME);
     }
 
@@ -36,14 +38,16 @@ public class CapeMod {
         FMLLog.info("[%s] init concluido", NAME);
     }
 
+    /** Codigo atual da tecla de abrir o menu (configuravel em Opcoes > Controles). */
+    public static int getMenuKeyCode() {
+        return openMenuKey == null ? Keyboard.KEY_C : openMenuKey.getKeyCode();
+    }
+
     @SubscribeEvent
     public void onKey(InputEvent.KeyInputEvent e) {
         if (openMenuKey.isPressed()) {
-            // ETAPA 2: abrira a GuiScreen do CapeMod.
             Minecraft mc = Minecraft.getMinecraft();
-            if (mc.thePlayer != null) {
-                mc.thePlayer.addChatMessage(new ChatComponentText("[CapeMod] Menu (ETAPA 2)"));
-            }
+            if (mc.currentScreen == null) mc.displayGuiScreen(new CapeMenuScreen());
         }
     }
 }
