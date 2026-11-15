@@ -1,6 +1,6 @@
 # CapeMod
 - `mod/`: mod Forge 1.8.9 (Java 8). Build: `cd mod && ./gradlew setupDecompWorkspace build` (requer Gradle 2.14 wrapper e internet).
-- `server/`: API REST (ETAPA 4).
+- `server/`: API REST + SQLite (ETAPA 4). Veja `server/README.md`.
 
 
 ## Compilar no GitHub
@@ -22,3 +22,5 @@
   `allowInsecureLocalhost` (só desenvolvimento).
 - Testes: `gradle test` (JUnit 4, `CapeValidatorTest`).
 - O upload real só pode ser testado de ponta a ponta quando a API existir (ETAPA 4).
+
+- ETAPA 4: servidor/API REST (`server/`), banco SQLite, armazenamento de texturas, autenticação básica, testes de API.
