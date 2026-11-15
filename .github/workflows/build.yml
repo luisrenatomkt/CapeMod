@@ -47,3 +47,24 @@ jobs:
         with:
           name: CapeMod-1.8.9
           path: mod/build/libs/*.jar
+
+  build-server:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup JDK 8
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '8'
+          cache: maven
+      - name: Build + testes
+        run: mvn -B package
+      - name: Upload jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: capemod-server
+          path: server/target/capemod-server.jar
