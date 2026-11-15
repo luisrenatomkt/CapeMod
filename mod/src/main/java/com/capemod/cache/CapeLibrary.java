@@ -1,29 +1,30 @@
 package com.capemod.cache;
 
+import com.capemod.textures.CapeValidator;
 import java.io.File;
 import java.io.IOException;
-import java.awt.image.BufferedImage;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
 import net.minecraft.client.Minecraft;
 
 /**
  * Biblioteca local de capas (.minecraft/capemod/library).
- * Os nomes de arquivo sao sempre gerados por este codigo (nunca usa o nome bruto do usuario),
- * o que impede path traversal. A validacao rigorosa de PNG sera ampliada na ETAPA 3.
+ * Nomes de arquivo sao sempre gerados aqui (nunca o nome bruto do usuario): sem path traversal.
+ * Todo PNG importado passa por CapeValidator e e regravado limpo.
  */
 public final class CapeLibrary {
-    public static final long MAX_BYTES = 1024L * 1024L;
-    public static final int MAX_WIDTH = 1024;
     private static final Pattern NAME = Pattern.compile("^[a-z0-9_\\-]{1,40}\\.png$");
 
     private CapeLibrary() {}
+
+    public static final class ImportResult {
+        public final String name;
+        public final List<String> warnings;
+        ImportResult(String name, List<String> warnings) { this.name = name; this.warnings = warnings; }
+    }
 
     private static File dir() {
         File d = new File(Minecraft.getMinecraft().mcDataDir, "capemod/library");
@@ -50,41 +51,19 @@ public final class CapeLibrary {
         return out;
     }
 
-    /** Valida (basico) e copia um PNG para a biblioteca. Retorna o nome gerado. */
-    public static String importFile(File src) throws IOException {
-        if (src == null || !src.isFile()) throw new IOException("Arquivo não encontrado.");
-        if (!src.getName().toLowerCase().endsWith(".png")) throw new IOException("O arquivo precisa ser .png.");
-        if (src.length() > MAX_BYTES) throw new IOException("Arquivo maior que 1 MB.");
-
-        BufferedImage img = readChecked(src);
-        String name = uniqueName(sanitize(src.getName()));
-        File target = new File(dir(), name);
-        // Re-codifica o PNG: descarta chunks extras/metadados do arquivo original.
-        if (!ImageIO.write(img, "png", target)) throw new IOException("Falha ao gravar o PNG.");
-        return name;
+    public static byte[] readBytes(String name) throws IOException {
+        File f = fileFor(name);
+        if (f == null || !f.isFile()) throw new IOException("Capa não encontrada na biblioteca.");
+        return Files.readAllBytes(f.toPath());
     }
 
-    private static BufferedImage readChecked(File src) throws IOException {
-        ImageInputStream in = ImageIO.createImageInputStream(src);
-        if (in == null) throw new IOException("Não foi possível ler o arquivo.");
-        try {
-            Iterator<ImageReader> it = ImageIO.getImageReaders(in);
-            if (!it.hasNext()) throw new IOException("Arquivo não é uma imagem válida.");
-            ImageReader reader = it.next();
-            try {
-                if (!"png".equalsIgnoreCase(reader.getFormatName())) throw new IOException("O arquivo não é um PNG.");
-                reader.setInput(in, true, true);
-                int w = reader.getWidth(0), h = reader.getHeight(0); // le so o cabecalho
-                if (w < 64 || w > MAX_WIDTH || w % 64 != 0 || h != w / 2) {
-                    throw new IOException("Tamanho inválido (" + w + "x" + h + "). Use 64x32 ou múltiplos (128x64...).");
-                }
-                return reader.read(0);
-            } finally {
-                reader.dispose();
-            }
-        } finally {
-            in.close();
-        }
+    public static ImportResult importFile(File src) throws IOException {
+        CapeValidator.Result r = CapeValidator.validate(src);
+        if (!r.ok) throw new IOException(r.error);
+        byte[] clean = CapeValidator.encode(r.image);
+        String name = uniqueName(sanitize(src.getName()));
+        Files.write(new File(dir(), name).toPath(), clean);
+        return new ImportResult(name, r.warnings);
     }
 
     private static String sanitize(String fileName) {

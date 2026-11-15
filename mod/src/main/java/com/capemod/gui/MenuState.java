@@ -7,6 +7,8 @@ import java.io.File;
 /** Estado compartilhado entre as telas do CapeMod (capa em previa e mensagem de status). */
 public final class MenuState {
     public static volatile String previewCape;
+    /** Progresso do upload (0..1); negativo = oculto. */
+    public static volatile float progress = -1F;
     private static volatile String message = "";
     private static volatile int messageColor = 0xFFFFFF;
     private static volatile long messageExpires = 0;

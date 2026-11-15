@@ -116,6 +116,13 @@ public class CapeMenuScreen extends GuiScreen {
             }
         }
 
+        float prog = MenuState.progress;
+        if (prog >= 0F) {
+            int bx = px + 10, by = py + 168;
+            Gui.drawRect(bx, by, bx + 120, by + 6, 0xFF303040);
+            Gui.drawRect(bx, by, bx + (int) (120 * Math.min(1F, prog)), by + 6, 0xFF55FF55);
+        }
+
         // Mensagem de status (ate 2 linhas)
         String msg = MenuState.currentMessage();
         if (!msg.isEmpty()) {

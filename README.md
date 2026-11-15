@@ -12,3 +12,13 @@
 - ETAPA 1: esqueleto + tecla C (validada no jogo).
 - ETAPA 2: menu gráfico (menu, galeria local, importar PNG, selecionar/remover, prévia, indicador de conexão).
   Upload remoto e rede: ETAPAS 3-6. Exibição da capa no personagem: ETAPA 7.
+
+## ETAPA 3 - Upload e validação
+- `CapeValidator` (textures): tamanho ≤ 1 MB, assinatura PNG, CRC de todos os chunks, sem APNG/dados extras,
+  tamanhos 64x32 e dobros até 1024x512 (checados pelo cabeçalho antes de decodificar), transparência da face da capa.
+- `CapeUploader` (networking): POST multipart em thread própria, só HTTPS, sem seguir redirecionamentos, com progresso.
+  Contrato: `POST {apiBaseUrl}/api/capes/upload`, campo `file`, `Authorization: Bearer <token>`.
+- Config (`config/capemod.cfg`): `apiBaseUrl`, `authToken` (preenchido pelo login na ETAPA 5),
+  `allowInsecureLocalhost` (só desenvolvimento).
+- Testes: `gradle test` (JUnit 4, `CapeValidatorTest`).
+- O upload real só pode ser testado de ponta a ponta quando a API existir (ETAPA 4).
